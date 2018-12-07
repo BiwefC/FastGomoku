@@ -1,4 +1,10 @@
 #pragma once
-namespace play {
-	void run(char *w, int k, char *c);
+
+#include "search.hpp"
+
+namespace play
+{
+
+void run(char *w, int k, char *c);
+
 }
