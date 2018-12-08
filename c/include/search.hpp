@@ -9,7 +9,10 @@
 #include <cassert>
 #include <numeric>
 #include <iterator>
-#include <ctime>
+#ifdef MULTI_THREAD
+#include <thread>
+#include <mutex>
+#endif
 #include "gomoku.hpp"
 #include "eval.hpp"
 
@@ -75,12 +78,16 @@ public:
     ~State();
     void set_eval(Evaluation *e);
     void expand();
-    void apply_dirichlet_noise(float alpha, float epsilon);
+    void apply_dirichlet_noise(float alpha, float epsilon, int seed);
     void backprop_value();
     void refresh_value();
     void get_searched_prob(SearchedProb &prob, double temp);
+    #ifdef MULTI_THREAD
+    std::mutex lock;
+    #endif
 private:
     Evaluation *eval;
+
 };
 
 class MCTS {
@@ -88,7 +95,7 @@ public:
     State *root;
     Evaluator *evaluator;
     int steps;
-    MCTS(State *root, Evaluator *evaluator, bool dirichlet_noise);
+    MCTS(State *root, Evaluator *evaluator, bool dirichlet_noise, int seed);
     Position random_step(double temp);
     void step(Position pos);
     void simulate(int k);
@@ -103,6 +110,10 @@ private:
     void set_root(State* state);
     std::default_random_engine rnd_eng;
     std::uniform_real_distribution<double> rnd_dis;
+    int simulate_once();
+    std::vector<State*> states;
+    bool batch_finish;
+    int seed;
 };
 
 }

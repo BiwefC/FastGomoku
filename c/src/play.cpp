@@ -19,7 +19,7 @@ void play::run(char *w, int k, char *c)
         std::system("pause");
         exit(1);
     }
-    auto mcts = MCTS(new State(nullptr, Game(), COLOR_BLACK), &eval, false);
+    auto mcts = MCTS(new State(nullptr, Game(), COLOR_BLACK), &eval, false, std::time(nullptr));
     Color current_color = COLOR_BLACK;
 
     Game game;

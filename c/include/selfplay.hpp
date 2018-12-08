@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <numeric>
+#include <ctime>
 #include <Python.h>
 #include <numpy/arrayobject.h>
 
@@ -28,6 +29,6 @@ struct StepSample {
 };
 
 void save_samples(vector<StepSample> &samples);
-void run(char* weight, int rounds);
+void run(char* weight, int rounds, int seed);
 
 };

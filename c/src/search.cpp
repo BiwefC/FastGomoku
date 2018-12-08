@@ -2,10 +2,10 @@
 
 using namespace gomoku;
 
-search::MCTS::MCTS(State *root, Evaluator *evaluator, bool dirichlet) :
+search::MCTS::MCTS(State *root, Evaluator *evaluator, bool dirichlet, int seed) :
     evaluator(evaluator),
     root(nullptr),
-    rnd_eng(std::time(nullptr)),
+    rnd_eng(seed),
     rnd_dis(0, 1),
     //current_color(COLOR_BLACK),
     dirichlet_noise(dirichlet)
@@ -95,56 +95,24 @@ void search::MCTS::simulate(int k)
     clock_t start = clock();
     #endif
     for (int t = 0; t < k / C_EVAL_BATCHSIZE; t++) {
-
-        std::vector<State*> states;
+        states.clear();
+        // std::vector<State*> states;
         states.reserve(C_EVAL_BATCHSIZE);
+        batch_finish = false;
         for (int i_batch = 0; i_batch < C_EVAL_BATCHSIZE; i_batch++) {
-            auto *current = root;
+            // int a = simulate_once();
+            #ifdef MULTI_THREAD
+            thread t(&search::MCTS::simulate_once, this);
+            t.join();
+            #else
+            simulate_once();
+            #endif
 
-            while (true) {
-                if (current->evaluating) goto batch_ready;
-
-                current->visit_count++;
-                if (current->game.is_over) {
-                    current->backprop_value(); // game over, backprob {+1, 0, -1} directly
-                    break;
-                }
-                if (!current->expanded) {
-                    if (current->evaluated) {
-                        current->expand();
-                    }
-                    else {
-                        states.emplace_back(current);
-                        current->evaluating = true;
-                        break;
-                    }
-                }
-
-                if (root == current && dirichlet_noise && root->expanded && !(root->noise_applied)) {
-                    current->apply_dirichlet_noise(0.04f, 0.25f);
-                }
-
-                if (current->expanded) {
-                    if (current->child_actions.size() == 0) break;
-                    auto &actions = current->child_actions;
-                    int max_i = -1;
-                    float max_ucb = 0, ucb = 0;
-                    for (int i = 0; i < actions.size(); i++) {
-                        ucb = actions[i].get_ucb();
-                        if (ucb > max_ucb || max_i == -1) {
-                            max_i = i;
-                            max_ucb = ucb;
-                        }
-                    }
-                    auto &action = actions[max_i];
-                    if (!action.expanded) {
-                        action.expand();
-                    }
-                    current = action.child_state;
-                }
-            }
+            // if (a != 0) {
+                // goto batch_ready;
+            // }
         }
-    batch_ready:
+    // batch_ready:
         std::vector<Game*> games;
         std::vector<Color> pov;
         games.reserve(states.size());
@@ -163,6 +131,86 @@ void search::MCTS::simulate(int k)
     clock_t ends = clock();
     std::cout <<"Simulate Time : "<<(double)(ends - start)/ CLOCKS_PER_SEC << std::endl;
     #endif
+}
+
+int search::MCTS::simulate_once()
+{
+    auto *current = root;
+
+    while (true) {
+        #ifdef MULTI_THREAD
+        current->lock.lock();
+        #endif
+
+        if (batch_finish) {
+            #ifdef MULTI_THREAD
+            current->lock.unlock();
+            #endif
+            return 0;
+        }
+
+        if (current->evaluating) {
+            batch_finish = true;
+            #ifdef MULTI_THREAD
+            current->lock.unlock();
+            #endif
+            return 0;
+        }
+        // return 1;
+
+        current->visit_count++;
+        if (current->game.is_over) {
+            current->backprop_value(); // game over, backprob {+1, 0, -1} directly
+            #ifdef MULTI_THREAD
+            current->lock.unlock();
+            #endif
+            return 0;
+        }
+        if (!current->expanded) {
+            if (current->evaluated) {
+                current->expand();
+            }
+            else {
+                states.emplace_back(current);
+                current->evaluating = true;
+                #ifdef MULTI_THREAD
+                current->lock.unlock();
+                #endif
+                return 0;
+            }
+        }
+
+        if (root == current && dirichlet_noise && root->expanded && !(root->noise_applied)) {
+            current->apply_dirichlet_noise(0.04f, 0.25f, seed);
+        }
+
+        if (current->expanded) {
+            if (current->child_actions.size() == 0) {
+                #ifdef MULTI_THREAD
+                current->lock.unlock();
+                #endif
+                return 0;
+            }
+            auto &actions = current->child_actions;
+            int max_i = -1;
+            float max_ucb = 0, ucb = 0;
+            for (int i = 0; i < actions.size(); i++) {
+                ucb = actions[i].get_ucb();
+                if (ucb > max_ucb || max_i == -1) {
+                    max_i = i;
+                    max_ucb = ucb;
+                }
+            }
+            auto &action = actions[max_i];
+            if (!action.expanded) {
+                action.expand();
+            }
+            #ifdef MULTI_THREAD
+            current->lock.unlock();
+            #endif
+            current = action.child_state;
+        }
+    }
 }
 
 search::State::State(Action *parent, Game game, Color color)
@@ -259,11 +307,11 @@ void search::State::refresh_value()
     }
 }
 
-void search::State::apply_dirichlet_noise(float alpha, float epsilon)
+void search::State::apply_dirichlet_noise(float alpha, float epsilon, int seed)
 {
     // if (!expanded) expand;
     static std::gamma_distribution<float> gamma(alpha, 1.0f);
-    static std::default_random_engine rng(std::time(nullptr));
+    static std::default_random_engine rng(seed);
 
     float d_sum = 0;
     auto dirichlet_vector = std::vector<float>();

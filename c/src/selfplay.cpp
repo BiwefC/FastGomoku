@@ -56,12 +56,12 @@ void selfplay::save_samples(vector<StepSample> &samples) {
     delete[] results;
 }
 
-void selfplay::run(char* weight, int rounds) {
-    auto evaluator = new PyEvaluator(weight);
+void selfplay::run(char* weight, int rounds, int seed) {
     //auto evaluator = new SimpleEvaluator();
 
 
     for (int t = 0; t < rounds; t++) {
+        auto evaluator = new PyEvaluator(weight);
         vector<StepSample> samples;
         int result_cursor = 0;
         Game game;
@@ -107,7 +107,10 @@ void selfplay::run(char* weight, int rounds) {
 
         // game.check_is_over();
         auto state = new State(nullptr, game, COLOR_BLACK);
-        auto mcts = MCTS(state, evaluator, true);
+        if (-1 == seed) {
+            seed = std::time(nullptr);
+        }
+        auto mcts = MCTS(state, evaluator, true, seed);
         int i_step = 0;
         while (true) {
             i_step++;
@@ -150,5 +153,3 @@ void selfplay::run(char* weight, int rounds) {
     }
     return;
 }
-
-

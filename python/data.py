@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import re
-import config as C
+from config import config as c
 
 
 def transform(array, action, inverse=False):
@@ -33,7 +33,7 @@ def transform(array, action, inverse=False):
 
 
 def load():
-    directory = "../games/train/"
+    directory = "../data/train/"
     count_sum = 0
 
     observation = []
@@ -52,7 +52,7 @@ def load():
         prob.append(data["prob"])
         result.append(data["result"])
 
-        if (count_sum >= C.RECENT_COUNT):
+        if (count_sum >= c.recent_count):
             break
 
     return np.concatenate(observation), np.concatenate(prob), np.concatenate(
@@ -65,9 +65,9 @@ def augment(observation, prob, result):
     for i in range(count):
         observation[i] = transform(observation[i], action[i], False)
 
-        p = np.resize(prob[i], [1, C.BOARD_SIZE, C.BOARD_SIZE])
+        p = np.resize(prob[i], [1, c.board_size, c.board_size])
         prob[i] = np.resize(
-            transform(p, action[i], False), [C.BOARD_SIZE * C.BOARD_SIZE])
+            transform(p, action[i], False), [c.board_size * c.board_size])
     return observation, prob, result
 
 
@@ -75,4 +75,3 @@ def shuffle(observation, prob, result):
     count = np.size(observation, 0)
     shuffle = np.random.RandomState(seed=10).permutation(count)
     return observation[shuffle], prob[shuffle], result[shuffle]
-

@@ -18,9 +18,7 @@ class MultiLableCrossEntropy(torch.nn.Module):
         super(MultiLableCrossEntropy).__init__()
 
     def forward(self, input, target):
-        # print(input)
-        # print(target)
-        return -torch.dot(torch.log(input), target) / input.data.size()[0]
+        return -torch.dot(torch.log(input).reshape(-1), target.reshape(-1)) / input.data.size()[0]
         # print(s)
         # print(1 / 0)
         # return s
@@ -102,10 +100,10 @@ class Model:
             self.optimizer.zero_grad()
             policy, value = self.resnet.forward(obsv_var)
             policy_loss = self.policy_loss_fn.forward(policy, prob_var)
-            value_loss = c.value_loss_factor * self.value_loss_fn.forward(value, result_var)
+            value_loss = c.value_loss_factor * self.value_loss_fn.forward(value, result_var.reshape(-1, 1))
 
-            train_policy_loss += policy_loss.data[0]
-            train_value_loss += value_loss.data[0]
+            train_policy_loss += policy_loss.data.item()
+            train_value_loss += value_loss.data.item()
 
             loss = policy_loss + value_loss
             # policy_loss.backward(retain_graph=True)
@@ -139,16 +137,18 @@ class Model:
         self.resnet.eval()
         for k in range(0, n_batches):
             start, end = k * c.batch_size, (k + 1) * c.batch_size
-            obsv_var = Variable(observation[start:end], volatile=True)
-            prob_var = Variable(prob[start:end], volatile=True)
-            result_var = Variable(result[start:end], volatile=True)
+            
+            with torch.no_grad():
+                obsv_var = Variable(observation[start:end])
+                prob_var = Variable(prob[start:end])
+                result_var = Variable(result[start:end])
 
             policy, value = self.resnet.forward(obsv_var)
             policy_loss = self.policy_loss_fn.forward(policy, prob_var)
-            value_loss = c.value_loss_factor * self.value_loss_fn.forward(value, result_var)
+            value_loss = c.value_loss_factor * self.value_loss_fn.forward(value, result_var.reshape(-1, 1))
 
-            test_policy_loss += policy_loss.data[0]
-            test_value_loss += value_loss.data[0]
+            test_policy_loss += policy_loss.data.item()
+            test_value_loss += value_loss.data.item()
 
         print("test    policy_loss={0}, value_loss={1}".format(
             test_policy_loss / n_batches,

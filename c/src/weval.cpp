@@ -23,8 +23,8 @@ void weval::run(char *w0, char *w1, int rounds, char *outdir)
             p0_color = COLOR_WHITE;
         }
 
-        MCTS mcts[2] = {MCTS(new State(nullptr, Game(), COLOR_BLACK), &eval[0], false),
-                        MCTS(new State(nullptr, Game(), COLOR_BLACK), &eval[1], false)};
+        MCTS mcts[2] = {MCTS(new State(nullptr, Game(), COLOR_BLACK), &eval[0], false, std::time(nullptr)),
+                        MCTS(new State(nullptr, Game(), COLOR_BLACK), &eval[1], false, std::time(nullptr))};
 
         int p = p_first;
         Color c = COLOR_BLACK;

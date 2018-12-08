@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
     if (strcmp(argv[1], "selfplay") == 0) {
         char *weight = nullptr;
         int rounds = 0;
+        int seed = -1;
         for (int i = 2; i < argc; i++) {
             if (strcmp(argv[i], "-w") == 0) {
                 weight = argv[++i];
@@ -39,12 +40,15 @@ int main(int argc, char *argv[])
             else if (strcmp(argv[i], "-r") == 0) {
                 sscanf(argv[++i], "%d", &rounds);
             }
+            else if (strcmp(argv[i], "-s") == 0) {
+                sscanf(argv[++i], "%d", &seed);
+            }
             else {
                 printf("unknown argument %s", argv[i]);
                 return -1;
             }
         }
-        selfplay::run(weight, rounds);
+        selfplay::run(weight, rounds, seed);
     }
     else if (strcmp(argv[1], "weval") == 0) {
         char *w0 = nullptr;
