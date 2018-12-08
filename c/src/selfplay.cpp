@@ -56,7 +56,7 @@ void selfplay::save_samples(vector<StepSample> &samples) {
     delete[] results;
 }
 
-void selfplay::run(char* weight, int rounds, int seed) {
+void selfplay::run(char* weight, int rounds, int v_level, int seed) {
     //auto evaluator = new SimpleEvaluator();
 
 
@@ -145,7 +145,9 @@ void selfplay::run(char* weight, int rounds, int seed) {
 
             mcts.random_step(temp);
             //printf("step%d\n", i_step);
-            mcts.root->game.graphic();
+            if (v_level) {
+                mcts.root->game.graphic();
+            }
 
         }
         save_samples(samples);

@@ -6,7 +6,7 @@ using namespace std;
 using namespace chrono;
 
 
-void weval::run(char *w0, char *w1, int rounds, char *outdir)
+void weval::run(char *w0, char *w1, int rounds, char *outdir, int v_level)
 {
     PyEvaluator eval[2] = {PyEvaluator(w0),
                            PyEvaluator(w1)};
@@ -36,7 +36,9 @@ void weval::run(char *w0, char *w1, int rounds, char *outdir)
 
 
             game.move(c, pos);
-            game.graphic();
+            if (v_level) {
+                game.graphic();
+            }
             game.check_is_over(pos.x, pos.y);
             c = -c;
             p = 1 - p;

@@ -9,7 +9,7 @@ def get_best_index():
     return int(os.listdir(c.weights_dir + "/best")[0])
 
 def run_selfplay(best_index):
-    os.system("../c/build/gomokuer.exe selfplay -w {w_dir}/{w_name}.pkl -r {r} -s {seed}".format(
+    os.system("../c/build/gomokuer.exe selfplay -w {w_dir}/{w_name}.pkl -r {r} -s {seed} -v 0".format(
         w_dir = c.weights_dir,
         w_name = best_index,
         r = 1,

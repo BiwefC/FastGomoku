@@ -11,6 +11,6 @@
 namespace weval
 {
 
-void run(char *w0, char *w1, int rounds, char *outdir);
+void run(char *w0, char *w1, int rounds, char *outdir, int v_level);
 
 }

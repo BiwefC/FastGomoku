@@ -33,6 +33,7 @@ int main(int argc, char *argv[])
         char *weight = nullptr;
         int rounds = 0;
         int seed = -1;
+        int v_level = 1;
         for (int i = 2; i < argc; i++) {
             if (strcmp(argv[i], "-w") == 0) {
                 weight = argv[++i];
@@ -43,18 +44,22 @@ int main(int argc, char *argv[])
             else if (strcmp(argv[i], "-s") == 0) {
                 sscanf(argv[++i], "%d", &seed);
             }
+            else if (strcmp(argv[i], "-v") == 0) {
+                sscanf(argv[++i], "%d", &v_level);
+            }
             else {
                 printf("unknown argument %s", argv[i]);
                 return -1;
             }
         }
-        selfplay::run(weight, rounds, seed);
+        selfplay::run(weight, rounds, v_level, seed);
     }
     else if (strcmp(argv[1], "weval") == 0) {
         char *w0 = nullptr;
         char *w1 = nullptr;
         int rounds = 0;
         char *o = nullptr;
+        int v_level = 1;
         for (int i = 2; i < argc; i++) {
             if (strcmp(argv[i], "-w0") == 0) {
                 w0 = argv[++i];
@@ -68,12 +73,15 @@ int main(int argc, char *argv[])
             else if (strcmp(argv[i], "-o") == 0) {
                 o = argv[++i];
             }
+            else if (strcmp(argv[i], "-v") == 0) {
+                sscanf(argv[++i], "%d", &v_level);
+            }
             else {
                 printf("unknown argument %s", argv[i]);
                 return -1;
             }
         }
-        weval::run(w0, w1, rounds, o);
+        weval::run(w0, w1, rounds, o, v_level);
 
     }
     else if (strcmp(argv[1], "play") == 0) {

@@ -29,6 +29,6 @@ struct StepSample {
 };
 
 void save_samples(vector<StepSample> &samples);
-void run(char* weight, int rounds, int seed);
+void run(char* weight, int rounds, int v_level, int seed);
 
 };

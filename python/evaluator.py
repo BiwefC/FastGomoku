@@ -1,9 +1,10 @@
 import os
 import time
+from multiprocessing import Pool
 from config import config as c
 
-def eval_onetime(w, best):
-    os.system("../c/build/gomokuer.exe weval -w0 {wdir}/{w}.pkl -w1 {wdir}/{best}.pkl -r {r} -o {o}".
+def eval_onetime(w_no, best_no, result_dir):
+    os.system("../c/build/gomokuer.exe weval -w0 {wdir}/{w}.pkl -w1 {wdir}/{best}.pkl -r {r} -o {o} -v 0".
             format(
                 wdir=c.weights_dir,
                 w=w_no,
@@ -12,6 +13,7 @@ def eval_onetime(w, best):
                 o=result_dir))
 
 def run():
+    print("Evaluating...")
     queue = os.listdir(c.weights_dir + "/eval/queue")
     queue_int = []
 
@@ -34,12 +36,12 @@ def run():
             os.mkdir(result_dir)
 
         p = Pool(c.eval_process_count)
-        for i in range(c.eval_process_count):
-            p.apply_async(eval_onetime, args = (w, best))
+        for i in range(c.eval_target_rounds):
+            p.apply_async(eval_onetime, args = (w, best, result_dir))
         p.close()
         p.join()
 
-        os.system("taskkill /im gomokuer.exe /f")
+        results = os.listdir(result_dir)
         win, draw, loss = 0, 0, 0
         for r in results:
             o = r.split("#")[1]
@@ -68,6 +70,8 @@ def run():
 
         with open(c.weights_dir + "/log/" + logstr, mode="w"):
             pass
+    print("Evaluate Finished!")
+
 
 if __name__ == "__main__":
     run()

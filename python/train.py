@@ -9,6 +9,7 @@ from config import config as c
 
 
 def run():
+    print("Training...")
     gen = int(os.listdir(c.weights_dir + "/current")[0])
     mod = model.Model()
     mod.load_weight(c.weights_dir + "/{0}.pkl".format(gen))
@@ -45,6 +46,7 @@ def run():
                 pass
         os.rename(c.weights_dir + "/current/{0}".format(gen), c.weights_dir + "/current/{0}".format(gen + 1))
         gen = gen + 1
+    print("Train Finished!")
 
 
 if __name__ == "__main__":
