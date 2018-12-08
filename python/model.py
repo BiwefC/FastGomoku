@@ -3,7 +3,8 @@ import torch
 from torch.autograd import Variable
 import resnet
 import data
-import config as C
+from config import config as c
+# import config as C
 # C_BLOCKS = 3  # deprecated
 # C_FILTERS = 32
 # C_BATCHNORM_DECAY = 0.9
@@ -33,7 +34,7 @@ class Model:
         if is_train:
             self.optimizer = torch.optim.SGD(
                 self.resnet.parameters(),
-                lr=C.LEARNING_RATE,
+                lr=c.learning_rate,
                 momentum=0.9,
                 weight_decay=1E-4)
             self.policy_loss_fn = MultiLableCrossEntropy()
@@ -41,9 +42,9 @@ class Model:
 
     def evaluate(self, observations):
         """
-        observation: [None, 2, C.BOARD_SIZE, C.BOARD_SIZE] array
+        observation: [None, 2, c.board_size, c.board_size] array
 
-        return policy[None, C.BOARD_SIZE * C.BOARD_SIZE], value[None]
+        return policy[None, c.board_size * c.board_size], value[None]
         """
 
         assert self.weight_ready
@@ -62,25 +63,25 @@ class Model:
         p = p.data.cpu().numpy()
         v = v.data.cpu().numpy()
 
-        p = np.reshape(p, [count, 1, C.BOARD_SIZE, C.BOARD_SIZE])
+        p = np.reshape(p, [count, 1, c.board_size, c.board_size])
         v = np.reshape(v, [count])
         for i in range(count):
             p[i] = data.transform(p[i], actions[i], inverse=True)
-        p = np.reshape(p, [count, C.BOARD_SIZE * C.BOARD_SIZE])
+        p = np.reshape(p, [count, c.board_size * c.board_size])
 
         return p, v
 
     def train(self, observation, prob, result):
         """
-        observation: [None, 2, C.BOARD_SIZE, C.BOARD_SIZE] array
-        prob: [None, C.BOARD_SIZE * C.BOARD_SIZE] array, searched probabalities
+        observation: [None, 2, c.board_size, c.board_size] array
+        prob: [None, c.board_size * c.board_size] array, searched probabalities
         result: [None] array, {-1, +1} represents loss or win
 
         """
         assert self.weight_ready
 
         n_samples = np.size(observation, 0)
-        n_batches = int(n_samples / C.BATCH_SIZE)
+        n_batches = int(n_samples / c.batch_size)
 
         observation = torch.from_numpy(observation).float().cuda()
         prob = torch.from_numpy(prob).float().cuda()
@@ -93,7 +94,7 @@ class Model:
             if (k + 1) % 100 == 0:
                 print("train batch {0} of {1}".format(k + 1, n_batches))
 
-            start, end = k * C.BATCH_SIZE, (k + 1) * C.BATCH_SIZE
+            start, end = k * c.batch_size, (k + 1) * c.batch_size
             obsv_var = Variable(observation[start:end])
             prob_var = Variable(prob[start:end])
             result_var = Variable(result[start:end])
@@ -101,7 +102,7 @@ class Model:
             self.optimizer.zero_grad()
             policy, value = self.resnet.forward(obsv_var)
             policy_loss = self.policy_loss_fn.forward(policy, prob_var)
-            value_loss = C.VALUE_LOSS_FACTOR * self.value_loss_fn.forward(value, result_var)
+            value_loss = c.value_loss_factor * self.value_loss_fn.forward(value, result_var)
 
             train_policy_loss += policy_loss.data[0]
             train_value_loss += value_loss.data[0]
@@ -119,15 +120,15 @@ class Model:
 
     def test(self, observation, prob, result):
         """
-        observation: [None, 2, C.BOARD_SIZE, C.BOARD_SIZE] array
-        prob: [None, C.BOARD_SIZE * C.BOARD_SIZE] array, searched probabalities
+        observation: [None, 2, c.board_size, c.board_size] array
+        prob: [None, c.board_size * c.board_size] array, searched probabalities
         result: [None] array, {-1, +1} represents loss or win
 
         """
         assert self.weight_ready
         print("testing...")
         n_samples = np.size(observation, 0)
-        n_batches = int(n_samples / C.BATCH_SIZE)
+        n_batches = int(n_samples / c.batch_size)
 
         observation = torch.from_numpy(observation).float().cuda()
         prob = torch.from_numpy(prob).float().cuda()
@@ -137,14 +138,14 @@ class Model:
 
         self.resnet.eval()
         for k in range(0, n_batches):
-            start, end = k * C.BATCH_SIZE, (k + 1) * C.BATCH_SIZE
+            start, end = k * c.batch_size, (k + 1) * c.batch_size
             obsv_var = Variable(observation[start:end], volatile=True)
             prob_var = Variable(prob[start:end], volatile=True)
             result_var = Variable(result[start:end], volatile=True)
 
             policy, value = self.resnet.forward(obsv_var)
             policy_loss = self.policy_loss_fn.forward(policy, prob_var)
-            value_loss = C.VALUE_LOSS_FACTOR * self.value_loss_fn.forward(value, result_var)
+            value_loss = c.value_loss_factor * self.value_loss_fn.forward(value, result_var)
 
             test_policy_loss += policy_loss.data[0]
             test_value_loss += value_loss.data[0]
