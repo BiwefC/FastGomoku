@@ -4,6 +4,7 @@ from torch.autograd import Variable
 import resnet
 import data
 from config import config as c
+import time
 # import config as C
 # C_BLOCKS = 3  # deprecated
 # C_FILTERS = 32
@@ -18,7 +19,8 @@ class MultiLableCrossEntropy(torch.nn.Module):
         super(MultiLableCrossEntropy).__init__()
 
     def forward(self, input, target):
-        return -torch.dot(torch.log(input).reshape(-1), target.reshape(-1)) / input.data.size()[0]
+        return -torch.mean(torch.sum(target*torch.log(input), 1))
+        # return -torch.dot(torch.log(input).reshape(-1), target.reshape(-1)) / input.data.size()[0]
         # print(s)
         # print(1 / 0)
         # return s
@@ -53,8 +55,9 @@ class Model:
             observations[i] = data.transform(
                 observations[i], actions[i], inverse=False)
 
-        observations = Variable(
-            torch.from_numpy(observations).float().cuda(), volatile=True)
+        with torch.no_grad():
+            observations = Variable(
+                torch.from_numpy(observations).float().cuda())
 
         self.resnet.eval()
         p, v = self.resnet.forward(observations)
@@ -81,9 +84,9 @@ class Model:
         n_samples = np.size(observation, 0)
         n_batches = int(n_samples / c.batch_size)
 
-        observation = torch.from_numpy(observation).float().cuda()
-        prob = torch.from_numpy(prob).float().cuda()
-        result = torch.from_numpy(result).float().cuda()
+        # observation = torch.from_numpy(observation).float().cuda()
+        # prob = torch.from_numpy(prob).float().cuda()
+        # result = torch.from_numpy(result).float().cuda()
 
         train_policy_loss, train_value_loss = 0.0, 0.0
 
@@ -93,14 +96,14 @@ class Model:
                 print("train batch {0} of {1}".format(k + 1, n_batches))
 
             start, end = k * c.batch_size, (k + 1) * c.batch_size
-            obsv_var = Variable(observation[start:end])
-            prob_var = Variable(prob[start:end])
-            result_var = Variable(result[start:end])
+            obsv_var = Variable(torch.from_numpy(observation[start:end]).float().cuda())
+            prob_var = Variable(torch.from_numpy(prob[start:end]).float().cuda())
+            result_var = Variable(torch.from_numpy(result[start:end]).float().cuda())
 
             self.optimizer.zero_grad()
             policy, value = self.resnet.forward(obsv_var)
             policy_loss = self.policy_loss_fn.forward(policy, prob_var)
-            value_loss = c.value_loss_factor * self.value_loss_fn.forward(value, result_var.reshape(-1, 1))
+            value_loss = c.value_loss_factor * self.value_loss_fn.forward(value.view(-1), result_var)
 
             train_policy_loss += policy_loss.data.item()
             train_value_loss += value_loss.data.item()
@@ -108,6 +111,7 @@ class Model:
             loss = policy_loss + value_loss
             # policy_loss.backward(retain_graph=True)
             # value_loss.backward()
+
             loss.backward()
 
             self.optimizer.step()
@@ -115,6 +119,11 @@ class Model:
         print("train   policy_loss={0}, value_loss={1}".format(
             train_policy_loss / n_batches,
             train_value_loss / n_batches))
+
+        with open(c.weights_dir + '/log/train.log', 'a') as f:
+            f.write("train   policy_loss={0}, value_loss={1}\n".format(
+                train_policy_loss / n_batches,
+                train_value_loss / n_batches))
 
     def test(self, observation, prob, result):
         """
@@ -137,7 +146,7 @@ class Model:
         self.resnet.eval()
         for k in range(0, n_batches):
             start, end = k * c.batch_size, (k + 1) * c.batch_size
-            
+
             with torch.no_grad():
                 obsv_var = Variable(observation[start:end])
                 prob_var = Variable(prob[start:end])

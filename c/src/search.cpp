@@ -415,6 +415,9 @@ void search::State::get_searched_prob(SearchedProb &prob, double temp)
                 max_count++;
             }
         }
+        for (int i = 0; i < BOARD_SIZE*BOARD_SIZE; i++) {
+            prob[i] = 0;
+        }
         for (int i = 0; i < child_actions.size(); i++) {
             int v = child_actions[i].get_visit_count();
             if (v == max) {
