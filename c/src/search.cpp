@@ -28,11 +28,6 @@ Position search::MCTS::random_step(double temp)
         }
     }
     Position pos = index2pos(index);
-    //if (pos.x == 0 && pos.y == 0) {
-    //  printf("test:\n");
-    //  root->game.render();
-    //  int a = 1;
-    //}
     step(pos);
     return pos;
 }
@@ -54,8 +49,6 @@ void search::MCTS::step(Position pos)
         }
     }
     if (!found) {
-        // auto game = root->game;
-        // assert(root->game.get(pos) == PLAYER_NONE);
         if (root->game.get(pos) == COLOR_NONE) {
             State *state = new State(nullptr, root->game, -root->color);
             state->game.move(root->color, pos);
@@ -237,18 +230,6 @@ search::State::~State()
 
 void search::State::set_eval(Evaluation *e)
 {
-    //if (game.is_over) {
-    //  if (game.winner == color) {
-    //      e->value = 1;
-    //  }
-    //  else if (game.winner = -color) {
-    //      e->value = -1;
-    //  }
-    //  else {
-    //      e->value = 0;
-    //  }
-    //}
-    // value = e->value;
     eval = e;
     refresh_value();
     backprop_value();
@@ -317,8 +298,6 @@ void search::State::apply_dirichlet_noise(float alpha, float epsilon, int seed)
     auto dirichlet_vector = std::vector<float>();
     auto unconsidered_pos = std::vector<Position>();
 
-    // int legal_count = 0;
-    // float sample_sum = 0;
     for (int i = 0; i < BOARD_SIZE; i++) {
         for (int j = 0; j < BOARD_SIZE; j++) {
             auto pos = Position{i, j};

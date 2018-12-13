@@ -15,7 +15,7 @@ class Config(object):
         # train
         self.recent_count = 10000
         self.batch_size = 256
-        self.learning_rate = 1e-4
+        self.learning_rate = 5e-4
         self.train_count = 2
         self.train_epoch = 1
 

@@ -1,15 +1,16 @@
 import os
 import time
+import random
 from multiprocessing import Pool
 from config import config as c
 
 def eval_onetime(w_no, best_no, result_dir):
-    os.system("../c/build/gomokuer.exe weval -w0 {wdir}/{w}.pkl -w1 {wdir}/{best}.pkl -r {r} -o {o} -v 0".
+    os.system("../c/build/FastGomoku weval -w0 {wdir}/{w}.pkl -w1 {wdir}/{best}.pkl -s {s} -o {o} -v 0".
             format(
                 wdir=c.weights_dir,
                 w=w_no,
                 best=best_no,
-                r=1,
+                s=random.random()*10000,
                 o=result_dir))
 
 def run():
@@ -68,8 +69,9 @@ def run():
             logstr += "FAIL"
         os.remove(c.weights_dir + "/eval/queue/{0}".format(w_no))
 
-        with open(c.weights_dir + "/log/" + logstr, mode="w"):
-            pass
+        with open(c.weights_dir + "/log/result.log", mode="a") as f:
+            f.write(logstr + '\n')
+
     print("Evaluate Finished!")
 
 

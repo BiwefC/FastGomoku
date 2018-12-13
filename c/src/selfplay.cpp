@@ -56,102 +56,100 @@ void selfplay::save_samples(vector<StepSample> &samples) {
     delete[] results;
 }
 
-void selfplay::run(char* weight, int rounds, int v_level, int seed) {
+void selfplay::run(char* weight, int v_level, int seed) {
     //auto evaluator = new SimpleEvaluator();
 
 
-    for (int t = 0; t < rounds; t++) {
-        auto evaluator = new PyEvaluator(weight);
-        vector<StepSample> samples;
-        int result_cursor = 0;
-        Game game;
+    auto evaluator = new PyEvaluator(weight);
+    vector<StepSample> samples;
+    int result_cursor = 0;
+    Game game;
 
-        /*game.move(COLOR_BLACK, 5, 5);
-        game.move(COLOR_BLACK, 5, 6);*/
-        //game.move(COLOR_BLACK, 5, 7);
-        //game.move(COLOR_BLACK, 5, 8);
+    /*game.move(COLOR_BLACK, 5, 5);
+    game.move(COLOR_BLACK, 5, 6);*/
+    //game.move(COLOR_BLACK, 5, 7);
+    //game.move(COLOR_BLACK, 5, 8);
 
-        //int black[9][9] ={    {1, 0, 1, 0, 0, 0, 1, 0, 1},
-        //                  {0, 1, 0, 0, 1, 1, 1, 0, 0},
-        //                  {0, 1, 0, 1, 1, 1, 0, 0, 1},
-        //                  {0, 1, 1, 1, 1, 0, 1, 1, 1},
-        //                  {0, 0, 0, 1, 1, 1, 0, 0, 0},
-        //                  {1, 0, 0, 0, 0, 1, 0, 1, 0},
-        //                  {1, 0, 1, 1, 0, 1, 1, 0, 1},
-        //                  {1, 1, 0, 1, 0, 1, 1, 0, 0},
-        //                  {1, 0, 0, 1, 0, 0, 1, 0, 0} };
+    //int black[9][9] ={    {1, 0, 1, 0, 0, 0, 1, 0, 1},
+    //                  {0, 1, 0, 0, 1, 1, 1, 0, 0},
+    //                  {0, 1, 0, 1, 1, 1, 0, 0, 1},
+    //                  {0, 1, 1, 1, 1, 0, 1, 1, 1},
+    //                  {0, 0, 0, 1, 1, 1, 0, 0, 0},
+    //                  {1, 0, 0, 0, 0, 1, 0, 1, 0},
+    //                  {1, 0, 1, 1, 0, 1, 1, 0, 1},
+    //                  {1, 1, 0, 1, 0, 1, 1, 0, 0},
+    //                  {1, 0, 0, 1, 0, 0, 1, 0, 0} };
 
-        //int white[9][9] = {   {0, 1, 0, 1, 1, 1, 0, 1, 0},
-        //                  {1, 0, 1, 1, 0, 0, 0, 1, 1},
-        //                  {1, 0, 1, 0, 0, 0, 1, 1, 0},
-        //                  {1, 0, 0, 0, 0, 1, 0, 0, 0},
-        //                  {1, 1, 1, 0, 0, 0, 1, 1, 1},
-        //                  {0, 1, 1, 1, 1, 0, 1, 0, 1},
-        //                  {0, 1, 0, 0, 1, 0, 0, 1, 0},
-        //                  {0, 0, 1, 0, 1, 0, 0, 1, 1},
-        //                  {0, 0, 1, 0, 1, 1, 0, 1, 1} };
+    //int white[9][9] = {   {0, 1, 0, 1, 1, 1, 0, 1, 0},
+    //                  {1, 0, 1, 1, 0, 0, 0, 1, 1},
+    //                  {1, 0, 1, 0, 0, 0, 1, 1, 0},
+    //                  {1, 0, 0, 0, 0, 1, 0, 0, 0},
+    //                  {1, 1, 1, 0, 0, 0, 1, 1, 1},
+    //                  {0, 1, 1, 1, 1, 0, 1, 0, 1},
+    //                  {0, 1, 0, 0, 1, 0, 0, 1, 0},
+    //                  {0, 0, 1, 0, 1, 0, 0, 1, 1},
+    //                  {0, 0, 1, 0, 1, 1, 0, 1, 1} };
 
-        //for (int i = 0; i < 9; i++) {
-        //  for (int j = 0; j < 9; j++) {
-        //      if (black[i][j] == 1) {
-        //          game.board[i][j] = COLOR_BLACK;
-        //      }
-        //      else if (white[i][j] == 1) {
-        //          game.board[i][j] = COLOR_WHITE;
-        //      }
-        //      else {
-        //          game.board[i][j] = COLOR_NONE;
-        //      }
-        //  }
-        //}
+    //for (int i = 0; i < 9; i++) {
+    //  for (int j = 0; j < 9; j++) {
+    //      if (black[i][j] == 1) {
+    //          game.board[i][j] = COLOR_BLACK;
+    //      }
+    //      else if (white[i][j] == 1) {
+    //          game.board[i][j] = COLOR_WHITE;
+    //      }
+    //      else {
+    //          game.board[i][j] = COLOR_NONE;
+    //      }
+    //  }
+    //}
 
-        // game.check_is_over();
-        auto state = new State(nullptr, game, COLOR_BLACK);
-        if (-1 == seed) {
-            seed = std::time(nullptr);
-        }
-        auto mcts = MCTS(state, evaluator, true, seed);
-        int i_step = 0;
-        while (true) {
-            i_step++;
-            double temp = get_temp(i_step);
-
-            if (mcts.root->game.is_over) {
-                mcts.root->game.show_result();
-
-                for (; result_cursor < samples.size(); result_cursor++) {
-                    auto &sample = samples[result_cursor];
-                    if (mcts.root->game.winner == sample.color) {
-                        sample.result = 1;
-                    }
-                    else if (mcts.root->game.winner == COLOR_NONE) {
-                        sample.result = 0;
-                    }
-                    else {
-                        sample.result = -1;
-                    }
-                }
-
-                break;
-            }
-            StepSample sample;
-            sample.color = mcts.root->color;
-
-            mcts.simulate(1600);
-
-            mcts.root->game.get_observation(sample.observation, mcts.root->color);
-            mcts.root->get_searched_prob(sample.prob, temp);
-            samples.emplace_back(sample);
-
-            mcts.random_step(temp);
-            //printf("step%d\n", i_step);
-            if (v_level) {
-                mcts.root->game.graphic();
-            }
-
-        }
-        save_samples(samples);
-        //system("pause");
+    // game.check_is_over();
+    auto state = new State(nullptr, game, COLOR_BLACK);
+    if (-1 == seed) {
+        seed = std::time(nullptr);
     }
+    auto mcts = MCTS(state, evaluator, true, seed);
+    int i_step = 0;
+    while (true) {
+        i_step++;
+        double temp = get_temp(i_step);
+
+        if (mcts.root->game.is_over) {
+            mcts.root->game.show_result();
+
+            for (; result_cursor < samples.size(); result_cursor++) {
+                auto &sample = samples[result_cursor];
+                if (mcts.root->game.winner == sample.color) {
+                    sample.result = 1;
+                }
+                else if (mcts.root->game.winner == COLOR_NONE) {
+                    sample.result = 0;
+                }
+                else {
+                    sample.result = -1;
+                }
+            }
+
+            break;
+        }
+        StepSample sample;
+        sample.color = mcts.root->color;
+
+        mcts.simulate(1600);
+
+        mcts.root->game.get_observation(sample.observation, mcts.root->color);
+        mcts.root->get_searched_prob(sample.prob, temp);
+        samples.emplace_back(sample);
+
+        mcts.random_step(temp);
+        //printf("step%d\n", i_step);
+        if (v_level) {
+            mcts.root->game.graphic();
+        }
+
+    }
+    save_samples(samples);
+        //system("pause");
     return;
 }

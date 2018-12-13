@@ -6,7 +6,6 @@ using namespace std;
 bool Game::is_swappable()
 {
     return false;
-    // return steps == 1;
 }
 
 Game::Game() : is_over(false), winner(COLOR_NONE), last_move{-1, -1}, steps(0)
@@ -128,88 +127,6 @@ void Game::check_is_over(int x, int y)
         is_over = true;
     }
 }
-
-// void Game::check_is_over()
-// {
-//     int k;
-//     Color current;
-//     int i, j;
-//     bool filled = true;
-
-//     for (i = 0; i < BOARD_SIZE - 5 + 1; i++) {
-//         for (j = 0; j < BOARD_SIZE - 5 + 1; j++) {
-//             current = board[i][j];
-//             if (current == COLOR_NONE) continue;
-//             for (k = 0; k < 5; k++) {
-//                 if (current != board[i + k][j + k]) break;
-//             }
-//             if (k == 5 && (C_SIX_WIN ||
-//                 get(i - 1, j - 1) != current &&
-//                 get(i + BOARD_SIZE, j + BOARD_SIZE) != current)) {
-//                 goto found;
-//             }
-//         }
-//     }
-//     for (i = 0; i < BOARD_SIZE - 5 + 1; i++) {
-//         for (j = 5 - 1; j < BOARD_SIZE - 1; j++) {
-//             current = board[i][j];
-//             if (current == COLOR_NONE) continue;
-//             for (k = 0; k < 5; k++) {
-//                 if (current != board[i + k][j - k]) break;
-//             }
-//             if (k == 5 && (C_SIX_WIN ||
-//                 get(i - 1, j + 1) != current &&
-//                 get(i + BOARD_SIZE, j - BOARD_SIZE) != current)) {
-//                 goto found;
-//             }
-//         }
-//     }
-//     for (i = 0; i < BOARD_SIZE - 1; i++) {
-//         for (j = 0; j < BOARD_SIZE - 5 + 1; j++) {
-//             current = board[i][j];
-//             if (current == COLOR_NONE) continue;
-//             for (k = 0; k < 5; k++) {
-//                 if (current != board[i][j + k]) break;
-//             }
-//             if (k == 5 && (C_SIX_WIN ||
-//                 get(i, j - 1) != current &&
-//                 get(i, j + BOARD_SIZE) != current)) {
-//                 goto found;
-//             }
-//         }
-//     }
-//     for (i = 0; i < BOARD_SIZE - 5 + 1; i++) {
-//         for (j = 0; j < BOARD_SIZE - 1; j++) {
-//             current = board[i][j];
-//             if (current == COLOR_NONE) continue;
-//             for (k = 0; k < 5; k++) {
-//                 if (current != board[i + k][j]) break;
-//             }
-//             if (k == 5 && (C_SIX_WIN ||
-//                 get(i - 1, j) != current &&
-//                 get(i + BOARD_SIZE, j) != current)) {
-//                 goto found;
-//             }
-//         }
-//     }
-//     filled = true;
-//     for (i = 0; i < BOARD_SIZE; i++) {
-//         for (j = 0; j < BOARD_SIZE; j++) {
-//             if (get(i, j) == COLOR_NONE) {
-//                 filled = false;
-//                 goto filled_break;
-//             }
-//         }
-//     }
-// filled_break:
-//     is_over = filled;
-//     winner = COLOR_NONE;
-//     return;
-// found:
-//     is_over = true;
-//     winner = current;
-//     return;
-// }
 
 bool Game::is_legal_move(Color color, Position pos)
 {

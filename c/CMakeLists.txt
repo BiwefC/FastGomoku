@@ -13,6 +13,6 @@ SET(NUMPY_LIBRARIES /home/biwefc/.local/lib/python3.6/site-packages/numpy/core/l
 
 include_directories(${PROJECT_SOURCE_DIR}/include/ /usr/include/python3.6m /home/biwefc/.local/lib/python3.6/site-packages/numpy/core/include/)
 file(GLOB SRC ${PROJECT_SOURCE_DIR}/src/*.cpp)
-add_executable(gomokuer.exe ${SRC})
-TARGET_LINK_LIBRARIES(gomokuer.exe ${PYTHON_LIBRARIES} ${NUMPY_LIBRARIES})
+add_executable(FastGomoku ${SRC})
+TARGET_LINK_LIBRARIES(FastGomoku ${PYTHON_LIBRARIES} ${NUMPY_LIBRARIES})
 

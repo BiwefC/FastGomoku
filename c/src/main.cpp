@@ -52,12 +52,12 @@ int main(int argc, char *argv[])
                 return -1;
             }
         }
-        selfplay::run(weight, rounds, v_level, seed);
+        selfplay::run(weight, v_level, seed);
     }
     else if (strcmp(argv[1], "weval") == 0) {
         char *w0 = nullptr;
         char *w1 = nullptr;
-        int rounds = 0;
+        int seed = 0;
         char *o = nullptr;
         int v_level = 1;
         for (int i = 2; i < argc; i++) {
@@ -67,8 +67,8 @@ int main(int argc, char *argv[])
             else if (strcmp(argv[i], "-w1") == 0) {
                 w1 = argv[++i];
             }
-            else if (strcmp(argv[i], "-r") == 0) {
-                sscanf(argv[++i], "%d", &rounds);
+            else if (strcmp(argv[i], "-s") == 0) {
+                sscanf(argv[++i], "%d", &seed);
             }
             else if (strcmp(argv[i], "-o") == 0) {
                 o = argv[++i];
@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
                 return -1;
             }
         }
-        weval::run(w0, w1, rounds, o, v_level);
+        weval::run(w0, w1, seed, o, v_level);
 
     }
     else if (strcmp(argv[1], "play") == 0) {
