@@ -34,7 +34,8 @@ void play::run(char *w, int k, char *c)
                 int move_j;
                 cin >> move_ic >> move_j;
                 //scanf_s("%d", &move_j);
-                pos = Position{move_ic - 'A', move_j - 1};
+                // pos = Position{move_ic - 'A', move_j - 1};
+                pos = Position{15 - move_j, move_ic - 'A'};
                 legal = game.is_legal_move(current_color, pos);
                 if (!legal) {
                     printf("illegal input!\n");

@@ -76,14 +76,15 @@ void Game::graphic()
             line2[row_size - 1] = ']';
         }
 
-        out << line2 << " " << (char)('A' + i) << endl;
+        // out << line2 << " " << (char)('A' + i) << endl;
+        out << line2 << " " << 15 - i << endl;
         out << line << endl;
     }
 
     char column_no[row_size] = {0};
     int offset = 0;
     for (int i = 1; i <= BOARD_SIZE; i++) {
-        offset += snprintf(column_no + offset, row_size - offset, "  %-2d", i);
+        offset += snprintf(column_no + offset, row_size - offset, "  %-2c", 'A' + i - 1);
     }
     out << column_no;
     puts(out.str().c_str());
