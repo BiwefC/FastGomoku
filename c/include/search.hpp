@@ -9,10 +9,6 @@
 #include <cassert>
 #include <numeric>
 #include <iterator>
-#ifdef MULTI_THREAD
-#include <thread>
-#include <mutex>
-#endif
 #include "gomoku.hpp"
 #include "eval.hpp"
 
@@ -31,14 +27,12 @@ const Player PLAYER_1 = 1;
 const Player PLAYER_2 = -1;
 
 typedef float SearchedProb[BOARD_SIZE * BOARD_SIZE];
-//enum ActionType { move, swap };
 
 
 class State;
 
 class Action {
 public:
-    // int visit_count;
     bool expanded;
     bool stepped;
     float prior_prob;
@@ -50,7 +44,6 @@ public:
     ~Action();
     float get_ucb();
     int get_visit_count();
-    //void backprop_value(float leaf_value);
     void expand();
 private:
     float _ucb;
@@ -61,9 +54,8 @@ public:
     Game game;
     int visit_count;
     Color color; // color going to play
-    // Player player; // player going to play
 
-    float sum_value; // , value;
+    float sum_value;
     float value;
     bool expanded;
     bool evaluated;
@@ -82,9 +74,6 @@ public:
     void backprop_value();
     void refresh_value();
     void get_searched_prob(SearchedProb &prob, double temp);
-    #ifdef MULTI_THREAD
-    std::mutex lock;
-    #endif
 private:
     Evaluation *eval;
 
@@ -95,15 +84,13 @@ public:
     State *root;
     Evaluator *evaluator;
     int steps;
+    MCTS(State *root, Evaluator *evaluator, bool dirichlet);
     MCTS(State *root, Evaluator *evaluator, bool dirichlet_noise, int seed);
-    Position random_step(double temp);
+    Position get_step(double temp);
     void step(Position pos);
     void simulate(int k);
 
-    //int select_action(double temp);
-    //Color select_color();
 private:
-    //Color current_color;
     bool dirichlet_noise;
     void step(int action_index);
     void step_finish(State* state);

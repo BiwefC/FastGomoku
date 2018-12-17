@@ -12,23 +12,6 @@ int main(int argc, char *argv[])
 
     py_util::init_python();
 
-    if (argc <= 1) {
-        printf("commands:\n");
-        printf("play        play with gomokuer\n");
-        printf("  -w            weigh path\n");
-        printf("  -k            times of MCTS simulation\n");
-        printf("  -c            color (\"b\"=black, \"w\"=white, without quotation mark)\n");
-        printf("selfplay    generate selfplay data\n");
-        printf("  -w            weigh path\n");
-        printf("  -r            rounds\n");
-        printf("weval        evaluate two weights (result = POV of w0)\n");
-        printf("  -w0           weight0 path\n");
-        printf("  -w1           weight1 path\n");
-        printf("  -r            rounds\n");
-        printf("  -o            output directory\n");
-        return 0;
-    }
-
     if (strcmp(argv[1], "selfplay") == 0) {
         char *weight = nullptr;
         int rounds = 0;
@@ -60,6 +43,7 @@ int main(int argc, char *argv[])
         int seed = 0;
         char *o = nullptr;
         int v_level = 1;
+        int k = 0;
         for (int i = 2; i < argc; i++) {
             if (strcmp(argv[i], "-w0") == 0) {
                 w0 = argv[++i];
@@ -76,12 +60,20 @@ int main(int argc, char *argv[])
             else if (strcmp(argv[i], "-v") == 0) {
                 sscanf(argv[++i], "%d", &v_level);
             }
+            else if (strcmp(argv[i], "-k") == 0) {
+                sscanf(argv[++i], "%d", &k);
+            }
             else {
                 printf("unknown argument %s", argv[i]);
                 return -1;
             }
         }
-        weval::run(w0, w1, seed, o, v_level);
+        if (k == 0){
+            weval::run(w0, w1, seed, o, v_level);
+        }
+        else{
+            weval::run(w0, w1, seed, o, v_level, k);
+        }
 
     }
     else if (strcmp(argv[1], "play") == 0) {

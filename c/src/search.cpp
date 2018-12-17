@@ -2,18 +2,27 @@
 
 using namespace gomoku;
 
-search::MCTS::MCTS(State *root, Evaluator *evaluator, bool dirichlet, int seed) :
+search::MCTS::MCTS(State *root, Evaluator *evaluator, bool dirichlet) :
     evaluator(evaluator),
     root(nullptr),
-    rnd_eng(seed),
+    rnd_eng(std::time(nullptr)),
     rnd_dis(0, 1),
-    //current_color(COLOR_BLACK),
     dirichlet_noise(dirichlet)
 {
     set_root(root);
 }
 
-Position search::MCTS::random_step(double temp)
+search::MCTS::MCTS(State *root, Evaluator *evaluator, bool dirichlet, int seed) :
+    evaluator(evaluator),
+    root(nullptr),
+    rnd_eng(seed),
+    rnd_dis(0, 1),
+    dirichlet_noise(dirichlet)
+{
+    set_root(root);
+}
+
+Position search::MCTS::get_step(double temp)
 {
     SearchedProb prob = {0.0f};
     root->get_searched_prob(prob, temp);
@@ -93,19 +102,8 @@ void search::MCTS::simulate(int k)
         states.reserve(C_EVAL_BATCHSIZE);
         batch_finish = false;
         for (int i_batch = 0; i_batch < C_EVAL_BATCHSIZE; i_batch++) {
-            // int a = simulate_once();
-            #ifdef MULTI_THREAD
-            thread t(&search::MCTS::simulate_once, this);
-            t.join();
-            #else
             simulate_once();
-            #endif
-
-            // if (a != 0) {
-                // goto batch_ready;
-            // }
         }
-    // batch_ready:
         std::vector<Game*> games;
         std::vector<Color> pov;
         games.reserve(states.size());
@@ -117,8 +115,6 @@ void search::MCTS::simulate(int k)
         for (int i = 0; i < states.size(); i++) {
             states[i]->set_eval(evals[i]);
         }
-        // call evaluator
-        // assign evaluations
     }
     #ifdef DEBUG
     clock_t ends = clock();
@@ -131,32 +127,19 @@ int search::MCTS::simulate_once()
     auto *current = root;
 
     while (true) {
-        #ifdef MULTI_THREAD
-        current->lock.lock();
-        #endif
 
         if (batch_finish) {
-            #ifdef MULTI_THREAD
-            current->lock.unlock();
-            #endif
             return 0;
         }
 
         if (current->evaluating) {
             batch_finish = true;
-            #ifdef MULTI_THREAD
-            current->lock.unlock();
-            #endif
             return 0;
         }
-        // return 1;
 
         current->visit_count++;
         if (current->game.is_over) {
             current->backprop_value(); // game over, backprob {+1, 0, -1} directly
-            #ifdef MULTI_THREAD
-            current->lock.unlock();
-            #endif
             return 0;
         }
         if (!current->expanded) {
@@ -166,9 +149,6 @@ int search::MCTS::simulate_once()
             else {
                 states.emplace_back(current);
                 current->evaluating = true;
-                #ifdef MULTI_THREAD
-                current->lock.unlock();
-                #endif
                 return 0;
             }
         }
@@ -179,9 +159,6 @@ int search::MCTS::simulate_once()
 
         if (current->expanded) {
             if (current->child_actions.size() == 0) {
-                #ifdef MULTI_THREAD
-                current->lock.unlock();
-                #endif
                 return 0;
             }
             auto &actions = current->child_actions;
@@ -198,9 +175,6 @@ int search::MCTS::simulate_once()
             if (!action.expanded) {
                 action.expand();
             }
-            #ifdef MULTI_THREAD
-            current->lock.unlock();
-            #endif
             current = action.child_state;
         }
     }
@@ -290,7 +264,6 @@ void search::State::refresh_value()
 
 void search::State::apply_dirichlet_noise(float alpha, float epsilon, int seed)
 {
-    // if (!expanded) expand;
     static std::gamma_distribution<float> gamma(alpha, 1.0f);
     static std::default_random_engine rng(seed);
 

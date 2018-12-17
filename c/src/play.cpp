@@ -16,10 +16,9 @@ void play::run(char *w, int k, char *c)
     }
     else {
         printf("please pick a color\n");
-        std::system("pause");
         exit(1);
     }
-    auto mcts = MCTS(new State(nullptr, Game(), COLOR_BLACK), &eval, false, std::time(nullptr));
+    auto mcts = MCTS(new State(nullptr, Game(), COLOR_BLACK), &eval, false);
     Color current_color = COLOR_BLACK;
 
     Game game;
@@ -33,8 +32,6 @@ void play::run(char *w, int k, char *c)
                 char move_ic;
                 int move_j;
                 cin >> move_ic >> move_j;
-                //scanf_s("%d", &move_j);
-                // pos = Position{move_ic - 'A', move_j - 1};
                 pos = Position{15 - move_j, move_ic - 'A'};
                 legal = game.is_legal_move(current_color, pos);
                 if (!legal) {
@@ -42,19 +39,13 @@ void play::run(char *w, int k, char *c)
                     cin.clear();
                     continue;
                 }
-                //cin.sync_with_stdio();
-                //cin.sync();
-                //fflush(stdin);
-
-                //ch = getchar();
                 Game game_temp = game;
                 game_temp.move(current_color, pos);
                 game_temp.graphic();
                 cout << "confirm? [y]/n" << endl;
                 char ch;
                 cin >> ch;
-                // ch = _getch();
-                if (ch == 'n') {
+                if (ch == 'n' or ch == 'N') {
                     game.graphic();
                     legal = false;
                 }
@@ -65,7 +56,7 @@ void play::run(char *w, int k, char *c)
             mcts.simulate(k);
 
             cout << "value=" << mcts.root->sum_value / mcts.root->visit_count << endl;
-            pos = mcts.random_step(0.0);
+            pos = mcts.get_step(0.0);
         }
 
         game.move(current_color, pos);
@@ -74,5 +65,4 @@ void play::run(char *w, int k, char *c)
         current_color = -current_color;
     }
     game.show_result();
-    std::system("pause");
 }

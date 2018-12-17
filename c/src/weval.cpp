@@ -8,6 +8,10 @@ using namespace chrono;
 
 void weval::run(char *w0, char *w1, int seed, char *outdir, int v_level)
 {
+    run(w0, w1, seed, outdir, v_level, 1600);
+}
+void weval::run(char *w0, char *w1, int seed, char *outdir, int v_level, int step)
+{
     PyEvaluator eval[2] = {PyEvaluator(w0),
                            PyEvaluator(w1)};
 
@@ -29,8 +33,8 @@ void weval::run(char *w0, char *w1, int seed, char *outdir, int v_level)
     Color c = COLOR_BLACK;
     while (!game.is_over) {
 
-        mcts[p].simulate(1600);
-        Position pos = mcts[p].random_step(0.0);
+        mcts[p].simulate(step);
+        Position pos = mcts[p].get_step(0.0);
         mcts[1 - p].step(pos);
 
 

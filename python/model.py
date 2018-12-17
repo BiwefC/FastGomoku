@@ -5,13 +5,6 @@ import resnet
 import data
 from config import config as c
 import time
-# import config as C
-# C_BLOCKS = 3  # deprecated
-# C_FILTERS = 32
-# C_BATCHNORM_DECAY = 0.9
-
-
-# NCHW!!!!
 
 
 class MultiLableCrossEntropy(torch.nn.Module):
@@ -20,10 +13,6 @@ class MultiLableCrossEntropy(torch.nn.Module):
 
     def forward(self, input, target):
         return -torch.mean(torch.sum(target*torch.log(input), 1))
-        # return -torch.dot(torch.log(input).reshape(-1), target.reshape(-1)) / input.data.size()[0]
-        # print(s)
-        # print(1 / 0)
-        # return s
 
 
 class Model:
@@ -72,6 +61,33 @@ class Model:
 
         return p, v
 
+    def forward(self, observations):
+        """
+        observation: [None, 2, c.board_size, c.board_size] array
+
+        return policy[None, c.board_size * c.board_size], value[None]
+        """
+
+        assert self.weight_ready
+        count = np.size(observations, 0)
+
+
+        with torch.no_grad():
+            observations = Variable(
+                torch.from_numpy(observations).float().cuda())
+
+        self.resnet.eval()
+        p, v = self.resnet.forward(observations)
+        p = p.data.cpu().numpy()
+        v = v.data.cpu().numpy()
+
+        p = np.reshape(p, [count, 1, c.board_size, c.board_size])
+        v = np.reshape(v, [count])
+
+        p = np.reshape(p, [count, c.board_size * c.board_size])
+
+        return p, v
+
     def train(self, observation, prob, result):
         """
         observation: [None, 2, c.board_size, c.board_size] array
@@ -83,10 +99,6 @@ class Model:
 
         n_samples = np.size(observation, 0)
         n_batches = int(n_samples / c.batch_size)
-
-        # observation = torch.from_numpy(observation).float().cuda()
-        # prob = torch.from_numpy(prob).float().cuda()
-        # result = torch.from_numpy(result).float().cuda()
 
         train_policy_loss, train_value_loss = 0.0, 0.0
 
@@ -109,9 +121,6 @@ class Model:
             train_value_loss += value_loss.data.item()
 
             loss = policy_loss + value_loss
-            # policy_loss.backward(retain_graph=True)
-            # value_loss.backward()
-
             loss.backward()
 
             self.optimizer.step()
@@ -170,10 +179,7 @@ class Model:
         print("loaded")
 
     def random_init_weight(self):
-        # self.sess.run(tf.global_variables_initializer())
         self.weight_ready = True
 
     def save_weight(self, path):
         torch.save(self.resnet.state_dict(), path)
-        # saver = tf.train.Saver()
-        # saver.save(self.sess, path)

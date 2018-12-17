@@ -2,12 +2,6 @@
 
 
 double get_temp(int i_step) {
-    //if (i_step <= 6) {
-    //  return 1.0;
-    //}
-    //else {
-    //  return 0.0;
-    //}
     if (i_step <= 8) {
         return -0.125 * i_step + 1.0;
     }
@@ -57,54 +51,11 @@ void selfplay::save_samples(vector<StepSample> &samples) {
 }
 
 void selfplay::run(char* weight, int v_level, int seed) {
-    //auto evaluator = new SimpleEvaluator();
-
-
     auto evaluator = new PyEvaluator(weight);
     vector<StepSample> samples;
     int result_cursor = 0;
     Game game;
 
-    /*game.move(COLOR_BLACK, 5, 5);
-    game.move(COLOR_BLACK, 5, 6);*/
-    //game.move(COLOR_BLACK, 5, 7);
-    //game.move(COLOR_BLACK, 5, 8);
-
-    //int black[9][9] ={    {1, 0, 1, 0, 0, 0, 1, 0, 1},
-    //                  {0, 1, 0, 0, 1, 1, 1, 0, 0},
-    //                  {0, 1, 0, 1, 1, 1, 0, 0, 1},
-    //                  {0, 1, 1, 1, 1, 0, 1, 1, 1},
-    //                  {0, 0, 0, 1, 1, 1, 0, 0, 0},
-    //                  {1, 0, 0, 0, 0, 1, 0, 1, 0},
-    //                  {1, 0, 1, 1, 0, 1, 1, 0, 1},
-    //                  {1, 1, 0, 1, 0, 1, 1, 0, 0},
-    //                  {1, 0, 0, 1, 0, 0, 1, 0, 0} };
-
-    //int white[9][9] = {   {0, 1, 0, 1, 1, 1, 0, 1, 0},
-    //                  {1, 0, 1, 1, 0, 0, 0, 1, 1},
-    //                  {1, 0, 1, 0, 0, 0, 1, 1, 0},
-    //                  {1, 0, 0, 0, 0, 1, 0, 0, 0},
-    //                  {1, 1, 1, 0, 0, 0, 1, 1, 1},
-    //                  {0, 1, 1, 1, 1, 0, 1, 0, 1},
-    //                  {0, 1, 0, 0, 1, 0, 0, 1, 0},
-    //                  {0, 0, 1, 0, 1, 0, 0, 1, 1},
-    //                  {0, 0, 1, 0, 1, 1, 0, 1, 1} };
-
-    //for (int i = 0; i < 9; i++) {
-    //  for (int j = 0; j < 9; j++) {
-    //      if (black[i][j] == 1) {
-    //          game.board[i][j] = COLOR_BLACK;
-    //      }
-    //      else if (white[i][j] == 1) {
-    //          game.board[i][j] = COLOR_WHITE;
-    //      }
-    //      else {
-    //          game.board[i][j] = COLOR_NONE;
-    //      }
-    //  }
-    //}
-
-    // game.check_is_over();
     auto state = new State(nullptr, game, COLOR_BLACK);
     if (-1 == seed) {
         seed = std::time(nullptr);
@@ -142,14 +93,12 @@ void selfplay::run(char* weight, int v_level, int seed) {
         mcts.root->get_searched_prob(sample.prob, temp);
         samples.emplace_back(sample);
 
-        mcts.random_step(temp);
-        //printf("step%d\n", i_step);
+        mcts.get_step(temp);
         if (v_level) {
             mcts.root->game.graphic();
         }
 
     }
     save_samples(samples);
-        //system("pause");
     return;
 }

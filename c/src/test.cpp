@@ -32,18 +32,12 @@ void test::run()
                 cin.clear();
                 continue;
             }
-            //cin.sync_with_stdio();
-            //cin.sync();
-            //fflush(stdin);
-
-            //ch = getchar();
             Game game_temp = game;
             game_temp.move(current_color, pos);
             game_temp.graphic();
             cout << "confirm? [y]/n" << endl;
             char ch;
             cin >> ch;
-            // ch = _getch();
             if (ch == 'n') {
                 game.graphic();
                 legal = false;
@@ -56,5 +50,4 @@ void test::run()
         current_color = -current_color;
     }
     game.show_result();
-    std::system("pause");
 }

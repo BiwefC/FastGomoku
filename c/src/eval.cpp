@@ -2,47 +2,6 @@
 
 using namespace std;
 
-void eval::Evaluation::policy_set(int i, int j, float prob)
-{
-    int p = i * BOARD_SIZE + j;
-    if (p >= 0 && p < BOARD_SIZE * BOARD_SIZE) {
-        policy[p] = prob;
-    }
-}
-
-#pragma region simple
-
-eval::SimpleEvaluator::SimpleEvaluator() {}
-
-eval::SimpleEvaluator::~SimpleEvaluator() {}
-
-std::vector<eval::Evaluation *> eval::SimpleEvaluator::evaluate(std::vector<Game*> games, std::vector<Color> pov)
-{
-    std::vector<Evaluation *> evals;
-    evals.reserve(games.size());
-    for (auto game : games) {
-        auto *eval = new Evaluation{};
-
-        for (int i = 0; i < BOARD_SIZE; i++) {
-            for (int j = 0; j < BOARD_SIZE; j++) {
-                // eval->policy_set(i, j, 0);
-                for (int di = -1; di <= 1; di++) {
-                    for (int dj = -1; dj <= 1; dj++) {
-                        if (game->board[i][j] != COLOR_NONE) {
-                            eval->policy_set(i + di, j + dj, 1);
-                        }
-                    }
-                }
-            }
-        }
-        // for (float &f : eval->policy) f = 1.0f;
-        eval->value = 0.0f;
-        evals.emplace_back(eval);
-    }
-    return evals;
-}
-
-#pragma endregion
 
 int eval_init_numpy()
 {
@@ -61,7 +20,6 @@ eval::PyEvaluator::PyEvaluator(char *weight)
     py_network = PyObject_CallFunction(py_class, "i", 0); // is_train=False
 
     eval_init_numpy();
-    //PyObject_CallMethod(py_network, "random_init_param", "");
 
     PyObject_CallMethod(py_network, "load_weight", "s", weight);
     if (!py_module) {
@@ -84,7 +42,6 @@ eval::PyEvaluator::PyEvaluator(char *weight)
     }
 finalize_temp:
     Py_XDECREF(py_module);
-    //Py_XDECREF(py_model_path);
     Py_XDECREF(py_dict);
     Py_XDECREF(py_class);
 }

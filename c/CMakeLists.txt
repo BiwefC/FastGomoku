@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 project(gomoku)
 
-# SET( CMAKE_BUILD_TYPE Debug  )
+SET( CMAKE_BUILD_TYPE Debug  )
 
 IF (CMAKE_BUILD_TYPE STREQUAL Debug)
     ADD_DEFINITIONS(-DDEBUG)
