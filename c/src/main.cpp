@@ -7,10 +7,10 @@
 #include "test.hpp"
 using namespace std;
 
+
 int main(int argc, char *argv[])
 {
-
-    py_util::init_python();
+    py_api::init_python();
 
     if (strcmp(argv[1], "selfplay") == 0) {
         char *weight = nullptr;

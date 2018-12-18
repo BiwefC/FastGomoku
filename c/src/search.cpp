@@ -2,7 +2,7 @@
 
 using namespace gomoku;
 
-search::MCTS::MCTS(State *root, Evaluator *evaluator, bool dirichlet) :
+search::MCTS::MCTS(ChessState *root, PyEvaluator *evaluator, bool dirichlet) :
     evaluator(evaluator),
     root(nullptr),
     rnd_eng(std::time(nullptr)),
@@ -12,7 +12,7 @@ search::MCTS::MCTS(State *root, Evaluator *evaluator, bool dirichlet) :
     set_root(root);
 }
 
-search::MCTS::MCTS(State *root, Evaluator *evaluator, bool dirichlet, int seed) :
+search::MCTS::MCTS(ChessState *root, PyEvaluator *evaluator, bool dirichlet, int seed) :
     evaluator(evaluator),
     root(nullptr),
     rnd_eng(seed),
@@ -29,6 +29,7 @@ Position search::MCTS::get_step(double temp)
     double r = rnd_dis(rnd_eng);
     int index = 0;
     float accum = 0.0f;
+
     for (int i = 0; i < BOARD_SIZE*BOARD_SIZE; i++) {
         accum += prob[i];
         if (accum > r) {
@@ -37,11 +38,11 @@ Position search::MCTS::get_step(double temp)
         }
     }
     Position pos = index2pos(index);
-    step(pos);
+    move_step(pos);
     return pos;
 }
 
-void search::MCTS::step(Position pos)
+void search::MCTS::move_step(Position pos)
 {
     bool found = false;
     if (root->expanded) {
@@ -54,12 +55,12 @@ void search::MCTS::step(Position pos)
             index++;
         }
         if (found) {
-            step(index);
+            move_step(index);
         }
     }
     if (!found) {
         if (root->game.get(pos) == COLOR_NONE) {
-            State *state = new State(nullptr, root->game, -root->color);
+            ChessState *state = new ChessState(nullptr, root->game, -root->color);
             state->game.move(root->color, pos);
             step_finish(state);
 
@@ -68,22 +69,22 @@ void search::MCTS::step(Position pos)
     return;
 }
 
-void search::MCTS::step(int action_index)
+void search::MCTS::move_step(int action_index)
 {
     auto &a = root->child_actions[action_index];
     if (!a.expanded) a.expand();
-    State *state = a.child_state;
+    ChessState *state = a.child_state;
     a.stepped = true;
     step_finish(state);
 }
 
-void search::MCTS::step_finish(State *state)
+void search::MCTS::step_finish(ChessState *state)
 {
     set_root(state);
     steps++;
 }
 
-void search::MCTS::set_root(State *state)
+void search::MCTS::set_root(ChessState *state)
 {
     delete root;
     state->parent_action = nullptr;
@@ -96,10 +97,9 @@ void search::MCTS::simulate(int k)
     #ifdef DEBUG
     clock_t start = clock();
     #endif
+    states.reserve(C_EVAL_BATCHSIZE);
     for (int t = 0; t < k / C_EVAL_BATCHSIZE; t++) {
         states.clear();
-        // std::vector<State*> states;
-        states.reserve(C_EVAL_BATCHSIZE);
         batch_finish = false;
         for (int i_batch = 0; i_batch < C_EVAL_BATCHSIZE; i_batch++) {
             simulate_once();
@@ -180,7 +180,7 @@ int search::MCTS::simulate_once()
     }
 }
 
-search::State::State(Action *parent, Game game, Color color)
+search::ChessState::ChessState(Move *parent, Game game, Color color)
     : parent_action(parent),
     color(color),
     visit_count(0),
@@ -194,15 +194,15 @@ search::State::State(Action *parent, Game game, Color color)
     value(0.0f),
     noise_applied(false)
 {
-    swappable = game.is_swappable();
+    ;
 }
 
-search::State::~State()
+search::ChessState::~ChessState()
 {
     delete eval;
 }
 
-void search::State::set_eval(Evaluation *e)
+void search::ChessState::set_eval(Evaluation *e)
 {
     eval = e;
     refresh_value();
@@ -211,23 +211,17 @@ void search::State::set_eval(Evaluation *e)
     evaluated = true;
 }
 
-void search::State::backprop_value()
+void search::ChessState::backprop_value()
 {
     auto current = this;
-    Action *action;
+    Move *action;
     float dv;
     while (true) {
-
-        if (swappable) {
-            dv = -std::fabs(value); // any imbalance is in favor of the swapper
+        if (color == current->color) {
+            dv = value;
         }
         else {
-            if (color == current->color) {
-                dv = value;
-            }
-            else {
-                dv = -value;
-            }
+            dv = -value;
         }
         current->sum_value += dv;
 
@@ -244,7 +238,7 @@ void search::State::backprop_value()
     }
 }
 
-void search::State::refresh_value()
+void search::ChessState::refresh_value()
 {
     if (game.is_over) {
         if (game.winner == color) {
@@ -262,7 +256,7 @@ void search::State::refresh_value()
     }
 }
 
-void search::State::apply_dirichlet_noise(float alpha, float epsilon, int seed)
+void search::ChessState::apply_dirichlet_noise(float alpha, float epsilon, int seed)
 {
     static std::gamma_distribution<float> gamma(alpha, 1.0f);
     static std::default_random_engine rng(seed);
@@ -309,7 +303,7 @@ void search::State::apply_dirichlet_noise(float alpha, float epsilon, int seed)
     noise_applied = true;
 }
 
-void search::State::expand()
+void search::ChessState::expand()
 {
     if (game.is_over) expanded = true;
     if (expanded) return;
@@ -342,7 +336,7 @@ void search::State::expand()
 
 }
 
-void search::State::get_searched_prob(SearchedProb &prob, double temp)
+void search::ChessState::get_searched_prob(SearchedProb &prob, double temp)
 {
     bool use_max = false;
     double power = 0;
@@ -367,10 +361,10 @@ void search::State::get_searched_prob(SearchedProb &prob, double temp)
                 max_count++;
             }
         }
-        for (int i = 0; i < BOARD_SIZE*BOARD_SIZE; i++) {
-            prob[i] = 0;
-        }
-        for (int i = 0; i < child_actions.size(); i++) {
+
+	memset(prob, 0, sizeof(float) * BOARD_SIZE * BOARD_SIZE);
+
+	for (int i = 0; i < child_actions.size(); i++) {
             int v = child_actions[i].get_visit_count();
             if (v == max) {
                 prob[pos2index(child_actions[i].pos)] = 1.0 / max_count;
@@ -393,7 +387,7 @@ void search::State::get_searched_prob(SearchedProb &prob, double temp)
 }
 
 
-search::Action::Action(State *parent_state, Position pos, float prob) :
+search::Move::Move(ChessState *parent_state, Position pos, float prob) :
     expanded(false),
     stepped(false),
     prior_prob(prob),
@@ -406,17 +400,15 @@ search::Action::Action(State *parent_state, Position pos, float prob) :
 }
 
 
-search::Action::~Action()
+search::Move::~Move()
 {
     if (!stepped) {
         delete child_state;
     }
 }
 
-float search::Action::get_ucb()
+float search::Move::get_ucb()
 {
-    //static auto rnd_eng = std::default_random_engine(std::time(nullptr));
-    //static auto rnd_dis = std::uniform_real_distribution<float>(0, 1E-3F);
     float u = 0;
     if (child_state != nullptr && child_state->evaluating) {
         u = -100; // apply a virtual loss
@@ -427,17 +419,17 @@ float search::Action::get_ucb()
     return u;
 }
 
-void search::Action::expand()
+void search::Move::expand()
 {
     if (expanded) return;
-    State *state = new State(this, parent_state->game, -parent_state->color);
+    ChessState *state = new ChessState(this, parent_state->game, -parent_state->color);
     state->game.move(parent_state->color, pos);
     state->refresh_value();
     child_state = state;
     expanded = true;
 }
 
-int search::Action::get_visit_count()
+int search::Move::get_visit_count()
 {
     return (child_state == nullptr ? 0 : child_state->visit_count);
 }

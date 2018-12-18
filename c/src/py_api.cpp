@@ -1,17 +1,17 @@
-#include "py_util.hpp"
+#include "py_api.hpp"
 
 using namespace std;
 
-PyObject *py_util::module = nullptr;
+PyObject *py_api::module = nullptr;
 
-void py_util::init_py_util()
+void py_api::init_py_util()
 {
     if (module == nullptr) {
         module = PyImport_ImportModule("utilities");
     }
 }
 
-void py_util::init_python()
+void py_api::init_python()
 {
     Py_Initialize();
     if (!Py_IsInitialized()) {
@@ -23,6 +23,4 @@ void py_util::init_python()
 
     PyRun_SimpleString("sys.argv = []");
     PyRun_SimpleString("sys.argv.append('gomokuer')");
-
-    init_py_util();
 }

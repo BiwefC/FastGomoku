@@ -39,7 +39,7 @@ void selfplay::save_samples(vector<StepSample> &samples) {
     auto py_probs = PyArray_SimpleNewFromData(2, dims_probs, NPY_FLOAT, probs);
     auto py_results = PyArray_SimpleNewFromData(1, dims_results, NPY_INT, results);
 
-    PyObject_CallMethod(py_util::module, "save_samples", "OOO", py_obsvs, py_probs, py_results);
+    PyObject_CallMethod(py_api::module, "save_samples", "OOO", py_obsvs, py_probs, py_results);
 
     Py_XDECREF(py_obsvs);
     Py_XDECREF(py_probs);
@@ -55,8 +55,9 @@ void selfplay::run(char* weight, int v_level, int seed) {
     vector<StepSample> samples;
     int result_cursor = 0;
     Game game;
+    py_api::init_py_util();
 
-    auto state = new State(nullptr, game, COLOR_BLACK);
+    auto state = new ChessState(nullptr, game, COLOR_BLACK);
     if (-1 == seed) {
         seed = std::time(nullptr);
     }

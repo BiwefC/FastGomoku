@@ -6,16 +6,13 @@ using namespace std;
 using namespace chrono;
 
 
-void weval::run(char *w0, char *w1, int seed, char *outdir, int v_level)
-{
-    run(w0, w1, seed, outdir, v_level, 1600);
-}
 void weval::run(char *w0, char *w1, int seed, char *outdir, int v_level, int step)
 {
     PyEvaluator eval[2] = {PyEvaluator(w0),
                            PyEvaluator(w1)};
 
     Game game;
+    py_api::init_py_util();
 
     int p_first = seed % 2;
     Color p0_color;
@@ -26,8 +23,8 @@ void weval::run(char *w0, char *w1, int seed, char *outdir, int v_level, int ste
         p0_color = COLOR_WHITE;
     }
 
-    MCTS mcts[2] = {MCTS(new State(nullptr, Game(), COLOR_BLACK), &eval[0], false, seed),
-                    MCTS(new State(nullptr, Game(), COLOR_BLACK), &eval[1], false, seed)};
+    MCTS mcts[2] = {MCTS(new ChessState(nullptr, Game(), COLOR_BLACK), &eval[0], false, seed),
+                    MCTS(new ChessState(nullptr, Game(), COLOR_BLACK), &eval[1], false, seed)};
 
     int p = p_first;
     Color c = COLOR_BLACK;
@@ -35,14 +32,14 @@ void weval::run(char *w0, char *w1, int seed, char *outdir, int v_level, int ste
 
         mcts[p].simulate(step);
         Position pos = mcts[p].get_step(0.0);
-        mcts[1 - p].step(pos);
+        mcts[1 - p].move_step(pos);
 
 
         game.move(c, pos);
         if (v_level) {
             game.graphic();
         }
-        game.check_is_over(pos.x, pos.y);
+        game.check_is_over(pos.row, pos.col);
         c = -c;
         p = 1 - p;
     }
@@ -58,5 +55,5 @@ void weval::run(char *w0, char *w1, int seed, char *outdir, int v_level, int ste
         result = "L";
     }
 
-    PyObject_CallMethod(py_util::module, "save_eval_result", "ss", outdir, result.c_str());
+    PyObject_CallMethod(py_api::module, "save_eval_result", "ss", outdir, result.c_str());
 }

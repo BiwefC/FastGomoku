@@ -40,7 +40,7 @@ eval::PyEvaluator::PyEvaluator(char *weight)
     else {
         init_succeeded = true;
     }
-finalize_temp:
+
     Py_XDECREF(py_module);
     Py_XDECREF(py_dict);
     Py_XDECREF(py_class);

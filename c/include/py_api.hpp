@@ -3,9 +3,8 @@
 #include <iostream>
 #include <Python.h>
 #include <numpy/arrayobject.h>
-// #include <atlconv.h>
 
-namespace py_util
+namespace py_api
 {
 
 void init_python();

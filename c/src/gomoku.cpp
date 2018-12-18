@@ -3,31 +3,23 @@
 using namespace gomoku;
 using namespace std;
 
-bool Game::is_swappable()
-{
-    return false;
-}
 
 Game::Game() : is_over(false), winner(COLOR_NONE), last_move{-1, -1}, steps(0)
 {
-    for (int i = 0; i < BOARD_SIZE; i++) {
-        for (int j = 0; j < BOARD_SIZE; j++) {
-            board[i][j] = COLOR_NONE;
-        }
-    }
+    memset(board, COLOR_NONE, sizeof(Color) * BOARD_SIZE * BOARD_SIZE);
 }
 
 void Game::move(Color p, Position pos)
 {
-    move(p, pos.x, pos.y);
+    move(p, pos.row, pos.col);
 }
 
-void Game::move(Color p, int x, int y)
+void Game::move(Color p, int row, int col)
 {
-    if (!is_legal_move(p, Position{x,y})) return;
-    board[x][y] = p;
-    check_is_over(x, y);
-    last_move = Position{x, y};
+    if (!is_legal_move(p, Position{row,col})) return;
+    board[row][col] = p;
+    check_is_over(row, col);
+    last_move = Position{row, col};
     steps++;
 }
 
@@ -51,14 +43,13 @@ void Game::graphic()
     line2[row_size] = 0;
     out << line << endl;
     for (int i = 0; i < BOARD_SIZE; i++) {
-        // char row[row_size];  // '  O  '
         for (int j = 0; j < BOARD_SIZE; j++) {
             line2[j * (cell_size + 1)] = ' ';
-            if (last_move.x == i) {
-                if (last_move.y == j) {
+            if (last_move.row == i) {
+                if (last_move.col == j) {
                     line2[j * (cell_size + 1)] = '[';
                 }
-                else if (last_move.y == j - 1) {
+                else if (last_move.col == j - 1) {
                     line2[j * (cell_size + 1)] = ']';
                 }
             }
@@ -72,11 +63,10 @@ void Game::graphic()
                 line2[st] = '_';
         }
         line2[row_size - 1] = ' ';
-        if (last_move.x == i && last_move.y == BOARD_SIZE - 1) {
+        if (last_move.row == i && last_move.col == BOARD_SIZE - 1) {
             line2[row_size - 1] = ']';
         }
 
-        // out << line2 << " " << (char)('A' + i) << endl;
         out << line2 << " " << 15 - i << endl;
         out << line << endl;
     }
@@ -113,9 +103,9 @@ void Game::show_result()
     }
 }
 
-void Game::check_is_over(int x, int y)
+void Game::check_is_over(int row, int col)
 {
-    winner = judge.do_judge(board, x, y);
+    winner = judge.do_judge(board, row, col);
     if (winner == COLOR_NONE) {
         if (steps == BOARD_SIZE * BOARD_SIZE - 1){
             is_over = true;
@@ -131,7 +121,7 @@ void Game::check_is_over(int x, int y)
 
 bool Game::is_legal_move(Color color, Position pos)
 {
-    return (pos.x >= 0 && pos.x < BOARD_SIZE && pos.y >= 0 && pos.y < BOARD_SIZE)
+    return (pos.row >= 0 && pos.row < BOARD_SIZE && pos.col >= 0 && pos.col < BOARD_SIZE)
         && get(pos) == COLOR_NONE;
 }
 

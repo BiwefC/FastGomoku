@@ -5,13 +5,9 @@
 #include <ctime>
 #include <Python.h>
 #include <numpy/arrayobject.h>
-
-// #include <atlconv.h>
-
 #include "gomoku.hpp"
 #include "search.hpp"
-
-#include "py_util.hpp"
+#include "py_api.hpp"
 
 using namespace std;
 using namespace search;

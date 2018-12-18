@@ -18,7 +18,7 @@ void play::run(char *w, int k, char *c)
         printf("please pick a color\n");
         exit(1);
     }
-    auto mcts = MCTS(new State(nullptr, Game(), COLOR_BLACK), &eval, false);
+    auto mcts = MCTS(new ChessState(nullptr, Game(), COLOR_BLACK), &eval, false);
     Color current_color = COLOR_BLACK;
 
     Game game;
@@ -50,7 +50,7 @@ void play::run(char *w, int k, char *c)
                     legal = false;
                 }
             }
-            mcts.step(pos);
+            mcts.move_step(pos);
         }
         else {
             mcts.simulate(k);

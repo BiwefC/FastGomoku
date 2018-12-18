@@ -29,19 +29,19 @@ const Player PLAYER_2 = -1;
 typedef float SearchedProb[BOARD_SIZE * BOARD_SIZE];
 
 
-class State;
+class ChessState;
 
-class Action {
+class Move {
 public:
     bool expanded;
     bool stepped;
     float prior_prob;
     float action_value;
-    State *parent_state;
-    State *child_state;
+    ChessState *parent_state;
+    ChessState *child_state;
     Position pos;
-    Action(State *parent, Position pos, float prob);
-    ~Action();
+    Move(ChessState *parent, Position pos, float prob);
+    ~Move();
     float get_ucb();
     int get_visit_count();
     void expand();
@@ -49,7 +49,7 @@ private:
     float _ucb;
 };
 
-class State {
+class ChessState {
 public:
     Game game;
     int visit_count;
@@ -61,13 +61,12 @@ public:
     bool evaluated;
     bool evaluating;
     bool noise_applied;
-    Action *parent_action;
+    Move *parent_action;
 
-    bool swappable;
-    std::vector<Action> child_actions;
+    std::vector<Move> child_actions;
 
-    State(Action *parent, Game game, Color color);
-    ~State();
+    ChessState(Move *parent, Game game, Color color);
+    ~ChessState();
     void set_eval(Evaluation *e);
     void expand();
     void apply_dirichlet_noise(float alpha, float epsilon, int seed);
@@ -81,24 +80,24 @@ private:
 
 class MCTS {
 public:
-    State *root;
-    Evaluator *evaluator;
+    ChessState *root;
+    PyEvaluator *evaluator;
     int steps;
-    MCTS(State *root, Evaluator *evaluator, bool dirichlet);
-    MCTS(State *root, Evaluator *evaluator, bool dirichlet_noise, int seed);
+    MCTS(ChessState *root, PyEvaluator *evaluator, bool dirichlet);
+    MCTS(ChessState *root, PyEvaluator *evaluator, bool dirichlet_noise, int seed);
     Position get_step(double temp);
-    void step(Position pos);
+    void move_step(Position pos);
     void simulate(int k);
 
 private:
     bool dirichlet_noise;
-    void step(int action_index);
-    void step_finish(State* state);
-    void set_root(State* state);
+    void move_step(int action_index);
+    void step_finish(ChessState* state);
+    void set_root(ChessState* state);
     std::default_random_engine rnd_eng;
     std::uniform_real_distribution<double> rnd_dis;
     int simulate_once();
-    std::vector<State*> states;
+    std::vector<ChessState*> states;
     bool batch_finish;
     int seed;
 };

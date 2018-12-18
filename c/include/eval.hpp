@@ -4,7 +4,6 @@
 #include <numpy/arrayobject.h>
 #include <Python.h>
 #include "gomoku.hpp"
-#include "py_util.hpp"
 
 using namespace gomoku;
 namespace eval
@@ -17,15 +16,7 @@ struct Evaluation {
     float value;
 };
 
-class Evaluator {
-public:
-    Evaluator() {};
-
-    virtual ~Evaluator() {};
-    virtual std::vector<Evaluation*> evaluate(std::vector<Game*> games, std::vector<Color> pov) = 0;
-};
-
-class PyEvaluator : public Evaluator {
+class PyEvaluator {
 public:
     bool init_succeeded;
     PyEvaluator(char *weight);
