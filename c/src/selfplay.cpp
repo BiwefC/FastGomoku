@@ -61,7 +61,7 @@ void selfplay::run(char* weight, int v_level, int seed) {
     if (-1 == seed) {
         seed = std::time(nullptr);
     }
-    auto mcts = MCTS(state, evaluator, true, seed);
+    auto mcts = mcts::MCTS(state, evaluator, true, seed);
     int i_step = 0;
     while (true) {
         i_step++;
@@ -88,13 +88,13 @@ void selfplay::run(char* weight, int v_level, int seed) {
         StepSample sample;
         sample.color = mcts.root->color;
 
-        mcts.simulate(1600);
+        mcts.search(1600);
 
         mcts.root->game.get_observation(sample.observation, mcts.root->color);
         mcts.root->get_searched_prob(sample.prob, temp);
         samples.emplace_back(sample);
 
-        mcts.get_step(temp);
+        mcts.get_simulation_result(temp);
         if (v_level) {
             mcts.root->game.graphic();
         }

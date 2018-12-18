@@ -1,6 +1,6 @@
 #pragma once
 
-#include "search.hpp"
+#include "mcts.hpp"
 
 namespace play
 {

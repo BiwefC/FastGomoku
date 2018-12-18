@@ -18,7 +18,7 @@ void play::run(char *w, int k, char *c)
         printf("please pick a color\n");
         exit(1);
     }
-    auto mcts = MCTS(new ChessState(nullptr, Game(), COLOR_BLACK), &eval, false);
+    auto mcts = mcts::MCTS(new ChessState(nullptr, Game(), COLOR_BLACK), &eval, false);
     Color current_color = COLOR_BLACK;
 
     Game game;
@@ -50,13 +50,13 @@ void play::run(char *w, int k, char *c)
                     legal = false;
                 }
             }
-            mcts.move_step(pos);
+            mcts.do_set(pos);
         }
         else {
-            mcts.simulate(k);
+            mcts.search(k);
 
             cout << "value=" << mcts.root->sum_value / mcts.root->visit_count << endl;
-            pos = mcts.get_step(0.0);
+            pos = mcts.get_simulation_result(0.0);
         }
 
         game.move(current_color, pos);

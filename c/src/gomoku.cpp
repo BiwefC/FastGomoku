@@ -39,8 +39,8 @@ void Game::graphic()
 
         line2[i] = ' ';
     }
-    line[row_size] = 0;
-    line2[row_size] = 0;
+    line[row_size] = '\0';
+    line2[row_size] = '\0';
     out << line << endl;
     for (int i = 0; i < BOARD_SIZE; i++) {
         for (int j = 0; j < BOARD_SIZE; j++) {

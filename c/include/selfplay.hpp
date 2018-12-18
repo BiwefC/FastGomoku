@@ -6,7 +6,7 @@
 #include <Python.h>
 #include <numpy/arrayobject.h>
 #include "gomoku.hpp"
-#include "search.hpp"
+#include "mcts.hpp"
 #include "py_api.hpp"
 
 using namespace std;

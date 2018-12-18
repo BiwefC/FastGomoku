@@ -3,7 +3,7 @@
 #include <fstream>
 #include <chrono>
 #include "eval.hpp"
-#include "search.hpp"
+#include "mcts.hpp"
 #include "gomoku.hpp"
 #include "py_api.hpp"
 

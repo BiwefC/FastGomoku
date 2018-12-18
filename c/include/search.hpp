@@ -78,28 +78,4 @@ private:
 
 };
 
-class MCTS {
-public:
-    ChessState *root;
-    PyEvaluator *evaluator;
-    int steps;
-    MCTS(ChessState *root, PyEvaluator *evaluator, bool dirichlet);
-    MCTS(ChessState *root, PyEvaluator *evaluator, bool dirichlet_noise, int seed);
-    Position get_step(double temp);
-    void move_step(Position pos);
-    void simulate(int k);
-
-private:
-    bool dirichlet_noise;
-    void move_step(int action_index);
-    void step_finish(ChessState* state);
-    void set_root(ChessState* state);
-    std::default_random_engine rnd_eng;
-    std::uniform_real_distribution<double> rnd_dis;
-    int simulate_once();
-    std::vector<ChessState*> states;
-    bool batch_finish;
-    int seed;
-};
-
 }

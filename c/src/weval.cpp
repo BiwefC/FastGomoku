@@ -23,16 +23,16 @@ void weval::run(char *w0, char *w1, int seed, char *outdir, int v_level, int ste
         p0_color = COLOR_WHITE;
     }
 
-    MCTS mcts[2] = {MCTS(new ChessState(nullptr, Game(), COLOR_BLACK), &eval[0], false, seed),
-                    MCTS(new ChessState(nullptr, Game(), COLOR_BLACK), &eval[1], false, seed)};
+    mcts::MCTS mcts[2] = {mcts::MCTS(new ChessState(nullptr, Game(), COLOR_BLACK), &eval[0], false, seed),
+                          mcts::MCTS(new ChessState(nullptr, Game(), COLOR_BLACK), &eval[1], false, seed)};
 
     int p = p_first;
     Color c = COLOR_BLACK;
     while (!game.is_over) {
 
-        mcts[p].simulate(step);
-        Position pos = mcts[p].get_step(0.0);
-        mcts[1 - p].move_step(pos);
+        mcts[p].search(step);
+        Position pos = mcts[p].get_simulation_result(0.0);
+        mcts[1 - p].do_set(pos);
 
 
         game.move(c, pos);
